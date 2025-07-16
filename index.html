@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🏠 Home Water Tank Level Monitor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #0066cc;
+    }
+
+    .data-box {
+      background: white;
+      padding: 20px;
+      margin: 15px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+      max-width: 500px;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    .tank {
+      position: relative;
+      width: 150px;
+      height: 300px;
+      margin: 20px auto;
+      border: 3px solid #333;
+      border-radius: 10px;
+      background-color: #e6e6e6;
+      overflow: hidden;
+    }
+
+    .water {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background-color: #00aaff;
+      transition: height 1s;
+    }
+
+    .percentage {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .updated {
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🏠 Home Water Tank Monitor</h1>
+
+  <div class="data-box">
+    <div><span class="label">Pressure:</span> <span id="pressure">--</span> mbar</div>
+    <div><span class="label">Water Height:</span> <span id="height">--</span> in</div>
+    <div><span class="label">Water Volume:</span> <span id="volume">--</span> gal</div>
+    <div><span class="label">Fill Percentage:</span> <span id="fill">--</span> %</div>
+    <div class="updated" id="timestamp">Last updated: --</div>
+  </div>
+
+  <div class="tank">
+    <div class="water" id="water-level" style="height: 0%;"></div>
+  </div>
+
+  <div class="percentage" id="percent-label">--%</div>
+
+  <script>
+    const channelID = 3010841;
+    const readAPI = "I4AJDEJIXTPAUIFK";
+
+    async function fetchData() {
+      try {
+        const url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?api_key=${readAPI}&results=1`;
+        const response = await fetch(url);
+        const data = await response.json();
+        const feed = data.feeds[0];
+
+        const pressure = parseFloat(feed.field1).toFixed(2);
+        const height = parseFloat(feed.field2).toFixed(2);
+        const volume = parseFloat(feed.field3).toFixed(2);
+        const fill = parseFloat(feed.field4).toFixed(1);
+
+        document.getElementById('pressure').textContent = pressure;
+        document.getElementById('height').textContent = height;
+        document.getElementById('volume').textContent = volume;
+        document.getElementById('fill').textContent = fill;
+        document.getElementById('timestamp').textContent = "Last updated: " + feed.created_at;
+
+        // Update tank level visually
+        const waterElement = document.getElementById('water-level');
+        const percentLabel = document.getElementById('percent-label');
+        const clampedFill = Math.min(Math.max(fill, 0), 100);  // Clamp between 0 and 100
+        waterElement.style.height = clampedFill + "%";
+        percentLabel.textContent = clampedFill + "%";
+
+      } catch (err) {
+        console.error("Failed to fetch ThingSpeak data:", err);
+      }
+    }
+
+    // Initial call
+    fetchData();
+    // Auto refresh every 20 seconds
+    setInterval(fetchData, 20000);
+  </script>
+
+</body>
+</html>
