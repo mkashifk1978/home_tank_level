@@ -92,7 +92,8 @@
         const pressure = parseFloat(feed.field1).toFixed(2);
         const height = parseFloat(feed.field2).toFixed(2);
         const volume = parseFloat(feed.field3).toFixed(2);
-        const fill = parseFloat(feed.field4).toFixed(1);
+        const fill = (parseFloat(feed.field4) - 18).toFixed(1);
+
 
         document.getElementById('pressure').textContent = pressure;
         document.getElementById('height').textContent = height;
