@@ -90,7 +90,7 @@
         const feed = data.feeds[0];
 
         const pressure = parseFloat(feed.field1).toFixed(2);
-        const height = parseFloat(feed.field2).toFixed(2);
+        const height = (parseFloat(feed.field2) - 17).toFixed(2);
         const volume = parseFloat(feed.field3).toFixed(2);
         const fill = (parseFloat(feed.field4) - 18).toFixed(1);
 
