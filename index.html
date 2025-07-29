@@ -99,7 +99,27 @@
         document.getElementById('height').textContent = height;
         document.getElementById('volume').textContent = volume;
         document.getElementById('fill').textContent = fill;
-        document.getElementById('timestamp').textContent = "Last updated: " + feed.created_at;
+
+        // Convert and shift time by +5 hours (UTC to Pakistan Time)
+const originalTime = new Date(feed.created_at);
+originalTime.setHours(originalTime.getHours() + 5); // UTC+5
+
+// Format to readable string
+const options = {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true
+};
+
+const formattedTime = originalTime.toLocaleString('en-GB', options);
+
+// Display
+document.getElementById('timestamp').textContent = "Last updated: " + formattedTime;
+
+
 
         // Update tank level visually
         const waterElement = document.getElementById('water-level');
