@@ -144,7 +144,7 @@
 
             oscillator.type = "square";
             oscillator.frequency.setValueAtTime(1000, ctx.currentTime); // Frequency in Hz
-            gainNode.gain.setValueAtTime(0.1, ctx.currentTime); // Volume
+            gainNode.gain.setValueAtTime(1, ctx.currentTime); // Volume
 
             oscillator.connect(gainNode);
             gainNode.connect(ctx.destination);
@@ -161,3 +161,4 @@
 
 </body>
 </html>
+
