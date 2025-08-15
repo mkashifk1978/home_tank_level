@@ -95,25 +95,25 @@
                 const pressure = parseFloat(feed.field1).toFixed(2);
                 const height = (parseFloat(feed.field2) - 17).toFixed(2);
                 const volume = parseFloat(feed.field3).toFixed(2);
-                
-                // --- MODIFIED CALCULATION FOR FILL PERCENTAGE ---
-                // Calculate fill percentage based on pressure range
-                let calculatedFill = 0;
-                if (!isNaN(pressure)) {
-                    calculatedFill = ((pressure - minPressure) / pressureRange) * 100;
-                }
-                const fill = Math.max(0, Math.min(100, calculatedFill)).toFixed(1);
-                
+
+                const rawFill = ((pressure - minPressure) / pressureRange) * 100;
+                const clampedFill = Math.max(0, Math.min(100, rawFill));
+                const fill = clampedFill.toFixed(1);
+
                 document.getElementById('pressure').textContent = pressure;
                 document.getElementById('height').textContent = height;
                 document.getElementById('volume').textContent = volume;
                 document.getElementById('fill').textContent = fill;
 
-                // Convert and shift time by +5 hours (UTC to Pakistan Time)
-                const originalTime = new Date(feed.created_at);
-                originalTime.setHours(originalTime.getHours() + 0); // UTC+5
+                // Beep if fill is 95% or more
+                if (clampedFill >= 95) {
+                    beep();
+                }
 
-                // Format to readable string
+                // Convert and shift time by +0 hours (still in UTC)
+                const originalTime = new Date(feed.created_at);
+                originalTime.setHours(originalTime.getHours() + 0); // Adjust if needed
+
                 const options = {
                     day: 'numeric',
                     month: 'long',
@@ -124,26 +124,39 @@
                 };
 
                 const formattedTime = originalTime.toLocaleString('en-GB', options);
-
-                // Display
                 document.getElementById('timestamp').textContent = "Last updated: " + formattedTime;
 
-                // Update tank level visually
                 const waterElement = document.getElementById('water-level');
                 const percentLabel = document.getElementById('percent-label');
-                const clampedFill = Math.min(Math.max(fill, 0), 100);
                 waterElement.style.height = clampedFill + "%";
-                percentLabel.textContent = clampedFill + "%";
+                percentLabel.textContent = clampedFill.toFixed(1) + "%";
 
             } catch (err) {
                 console.error("Failed to fetch ThingSpeak data:", err);
             }
         }
 
-        // Initial call
+        // Beep sound using Web Audio API
+        function beep() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+
+            oscillator.type = "square";
+            oscillator.frequency.setValueAtTime(1000, ctx.currentTime); // Frequency in Hz
+            gainNode.gain.setValueAtTime(0.1, ctx.currentTime); // Volume
+
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            oscillator.start();
+            oscillator.stop(ctx.currentTime + 0.3); // Duration: 0.3 seconds
+        }
+
+        // Initial fetch
         fetchData();
-        // Auto refresh every 20 seconds
-        setInterval(fetchData, 20000);
+        // Refresh every 1 seconds
+        setInterval(fetchData, 1000);
     </script>
 
 </body>
